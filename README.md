@@ -15,10 +15,23 @@
 ## Feature
 - [x] / 首页只返回IP的字符串
 - [x] /c或者/country json格式，ip,country 
+- [x] /geo 行格式，ip,upstream,country,province,city 
 - [x] /ip json格式，带有ip,country,upstream（上一来源如果有的话）
 - [x] /h或者/header json格式，返回ip,country,upstream,header
 - [ ] 支持ipv6？
 - [ ] 支持代理验证？
+
+## 运行
+```shell
+go install github.com/LubyRuffy/myip@latest
+`go env GOPATH`/bin/myip 
+```
+
+绑定到80端口需要root权限
+```shell
+cd `go env GOPATH`/bin
+sudo ./myip -addr :80 
+```
 
 ## 致谢
 目前看起来，不用登陆，还能免费下载和使用的ip库，只剩下db-ip了。

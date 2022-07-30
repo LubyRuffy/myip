@@ -165,6 +165,57 @@ func headerAction(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(result)
 }
 
+/*
+curl 127.0.0.1:8888/geo -H 'X-Forwarded-For: 8.8.8.8'
+127.0.0.1
+8.8.8.8,United States,California,Mountain View,North America
+*/
+func geoAction(w http.ResponseWriter, r *http.Request) {
+	ip, upstream := getIp(r)
+
+	ipLine := ip
+	var upstreamLine string
+	if upstream != ip {
+		upstreamLine = upstream
+	}
+
+	if ipDb != nil {
+		var record map[string]interface{}
+		err := ipDb.Lookup(net.ParseIP(ip), &record)
+		if err == nil && record != nil {
+			ipLine += "," + record["country"].(map[string]interface{})["names"].(map[string]interface{})["en"].(string)
+			var subdivisions string
+			if len(record["subdivisions"].([]interface{})) > 0 {
+				subdivisions = record["subdivisions"].([]interface{})[0].(map[string]interface{})["names"].(map[string]interface{})["en"].(string)
+			}
+			ipLine += "," + subdivisions
+			ipLine += "," + record["city"].(map[string]interface{})["names"].(map[string]interface{})["en"].(string)
+			ipLine += "," + record["continent"].(map[string]interface{})["names"].(map[string]interface{})["en"].(string)
+		}
+
+		if upstream != ip {
+			err = ipDb.Lookup(net.ParseIP(upstream), &record)
+			if err == nil && record != nil {
+				upstreamLine += "," + record["country"].(map[string]interface{})["names"].(map[string]interface{})["en"].(string)
+				var subdivisions string
+				if len(record["subdivisions"].([]interface{})) > 0 {
+					subdivisions = record["subdivisions"].([]interface{})[0].(map[string]interface{})["names"].(map[string]interface{})["en"].(string)
+				}
+				upstreamLine += "," + subdivisions
+				upstreamLine += "," + record["city"].(map[string]interface{})["names"].(map[string]interface{})["en"].(string)
+				upstreamLine += "," + record["continent"].(map[string]interface{})["names"].(map[string]interface{})["en"].(string)
+			}
+		}
+
+	}
+
+	if len(upstreamLine) > 0 {
+		ipLine += "\n" + upstreamLine
+	}
+
+	w.Write([]byte(ipLine))
+}
+
 // curl 127.0.0.1:8888/c -H 'X-Forwarded-For: 8.8.8.8'
 // {"ip":"127.0.0.1","upstream":"8.8.8.8","upstream_country":"United States"}
 func countryAction(w http.ResponseWriter, r *http.Request) {
@@ -208,6 +259,7 @@ func runWeb(addr string) *http.Server {
 	router.HandleFunc("/", defaultAction)
 	// ip
 	router.HandleFunc("/ip", ipAction)
+	router.HandleFunc("/geo", geoAction)
 	// header
 	router.HandleFunc("/h", headerAction)
 	router.HandleFunc("/header", headerAction)
