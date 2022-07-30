@@ -33,5 +33,150 @@ cd `go env GOPATH`/bin
 sudo ./myip -addr :80 
 ```
 
+## 测试
+
+### 获取ip
+直接连接
+```shell
+$ curl ip.bmh.im
+61.148.1.1
+```
+
+使用代理
+```shell
+$ http_proxy=http://2.2.2.2 curl ip.bmh.im
+2.2.2.2
+```
+
+### 获取country，json格式
+```shell
+$ http_proxy=http://155.138.1.1 curl ip.bmh.im/c | jq
+{
+  "ip": "155.138.1.1",
+  "country": "United States",
+  "upstream": "61.148.1.1",
+  "upstream_country": "China"
+}
+```
+
+### 获取geo，行的形式
+```shell
+$ http_proxy=http://155.138.1.1 curl ip.bmh.im/geo
+155.138.1.1,United States,Georgia,Atlanta (Knight Park/Howell Station),North America
+61.148.1.1,China,Beijing,Xicheng District,Asia
+```
+
+### 获取header，json格式
+```shell
+$ http_proxy=http://155.138.1.1 curl ip.bmh.im/h | jq
+{
+  "geo": {
+    "city": {
+      "names": {
+        "en": "Xicheng District"
+      }
+    },
+    "continent": {
+      "code": "AS",
+      "geoname_id": 6255147,
+      "names": {
+        "de": "Asien",
+        "en": "Asia",
+        "es": "Asia",
+        "fa": " آسیا",
+        "fr": "Asie",
+        "ja": "アジア大陸",
+        "ko": "아시아",
+        "pt-BR": "Ásia",
+        "ru": "Азия",
+        "zh-CN": "亚洲"
+      }
+    },
+    "country": {
+      "geoname_id": 1814991,
+      "is_in_european_union": false,
+      "iso_code": "CN",
+      "names": {
+        "de": "China, Volksrepublik",
+        "en": "China",
+        "es": "China",
+        "fa": "چین",
+        "fr": "Chine",
+        "ja": "中国",
+        "ko": "중국",
+        "pt-BR": "China",
+        "ru": "Китай",
+        "zh-CN": "中国"
+      }
+    },
+    "location": {
+      "latitude": 39.9175,
+      "longitude": 116.362
+    },
+    "subdivisions": [
+      {
+        "names": {
+          "en": "Beijing"
+        }
+      }
+    ]
+  },
+  "header": "GET /h HTTP/1.1\nUser-Agent: curl/7.83.0\nAccept: */*\nVia: 1.1 proxAtlanta01 (squid/4.11)\nX-Forwarded-For: 61.148.74.134\nCache-Control: max-age=259200\nConnection: keep-alive\nIf-Modified-Since: Sat, 30 Jul 2022 13:23:07 GMT\n",
+  "ip": "155.138.1.1",
+  "upstream": "61.148.1.1",
+  "upstream_geo": {
+    "city": {
+      "names": {
+        "en": "Xicheng District"
+      }
+    },
+    "continent": {
+      "code": "AS",
+      "geoname_id": 6255147,
+      "names": {
+        "de": "Asien",
+        "en": "Asia",
+        "es": "Asia",
+        "fa": " آسیا",
+        "fr": "Asie",
+        "ja": "アジア大陸",
+        "ko": "아시아",
+        "pt-BR": "Ásia",
+        "ru": "Азия",
+        "zh-CN": "亚洲"
+      }
+    },
+    "country": {
+      "geoname_id": 1814991,
+      "is_in_european_union": false,
+      "iso_code": "CN",
+      "names": {
+        "de": "China, Volksrepublik",
+        "en": "China",
+        "es": "China",
+        "fa": "چین",
+        "fr": "Chine",
+        "ja": "中国",
+        "ko": "중국",
+        "pt-BR": "China",
+        "ru": "Китай",
+        "zh-CN": "中国"
+      }
+    },
+    "location": {
+      "latitude": 39.9175,
+      "longitude": 116.362
+    },
+    "subdivisions": [
+      {
+        "names": {
+          "en": "Beijing"
+        }
+      }
+    ]
+  }
+}
+```
+
 ## 致谢
 目前看起来，不用登陆，还能免费下载和使用的ip库，只剩下db-ip了。
