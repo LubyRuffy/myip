@@ -33,7 +33,7 @@ cd `go env GOPATH`/bin
 sudo ./myip -addr :80
 
 # 或者nohup运行
-sudo nohup sh -c '`go env GOPATH`/bin/myip -addr :80' &
+sudo nohup sh -c "`go env GOPATH`/bin/myip -addr :80" &
 ```
 
 
