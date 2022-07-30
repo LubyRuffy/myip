@@ -84,6 +84,7 @@ func openIPDb(dbFile string) error {
 
 	newIpDb, err := maxminddb.Open(dbFile)
 	if err != nil {
+		log.Println("[WARNING] open ip db failed:", err)
 		return err
 	}
 

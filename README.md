@@ -50,6 +50,14 @@ $ http_proxy=http://2.2.2.2 curl ip.bmh.im
 
 ### 获取country，json格式
 ```shell
+$ curl ip.bmh.im/c | jq
+{
+  "ip": "155.138.1.1",
+  "country": "United States",
+}
+```
+
+```shell
 $ http_proxy=http://155.138.1.1 curl ip.bmh.im/c | jq
 {
   "ip": "155.138.1.1",
@@ -60,6 +68,12 @@ $ http_proxy=http://155.138.1.1 curl ip.bmh.im/c | jq
 ```
 
 ### 获取geo，行的形式
+
+```shell
+$ curl ip.bmh.im/geo
+61.148.1.1,China,Beijing,Xicheng District,Asia
+```
+
 ```shell
 $ http_proxy=http://155.138.1.1 curl ip.bmh.im/geo
 155.138.1.1,United States,Georgia,Atlanta (Knight Park/Howell Station),North America
