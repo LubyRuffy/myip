@@ -18,7 +18,7 @@
 - [x] /geo 行格式，ip,upstream,country,province,city 
 - [x] /ip json格式，带有ip,country,upstream（上一来源如果有的话）
 - [x] /h或者/header json格式，返回ip,country,upstream,header
-- [ ] 支持ipv6？
+- [x] 支持ipv6，需要dns配置ipv6对应的AAAA记录，```dig AAAA ip.bmh.im```，客户端是ipv6的话可以直接查询
 - [ ] 支持代理验证？
 
 ## 运行
