@@ -77,10 +77,16 @@ curl 127.0.0.1:8888/ip -H 'X-Forwarded-For: 1.1.1.1' -H 'X-Real-IP: 2.2.2.2'
 */
 func ipAction(w http.ResponseWriter, r *http.Request) {
 	ip, upstream := getIp(r)
-	json.NewEncoder(w).Encode(map[string]interface{}{
-		"ip":       ip,
-		"upstream": upstream,
-	})
+
+	result := map[string]interface{}{
+		"ip": ip,
+	}
+
+	if upstream != ip {
+		result["upstream"] = upstream
+	}
+
+	json.NewEncoder(w).Encode(result)
 }
 
 /*
@@ -149,16 +155,26 @@ func headerAction(w http.ResponseWriter, r *http.Request) {
 	ip, upstream := getIp(r)
 
 	result := map[string]interface{}{
-		"ip":       ip,
-		"upstream": upstream,
-		"header":   headerString(r),
+		"ip":     ip,
+		"header": headerString(r),
+	}
+
+	if upstream != ip {
+		result["upstream"] = upstream
 	}
 
 	if ipDb != nil {
 		var record map[string]interface{}
-		err := ipDb.Lookup(net.ParseIP(upstream), &record)
+		err := ipDb.Lookup(net.ParseIP(ip), &record)
 		if err == nil && record != nil {
 			result["geo"] = record
+		}
+
+		if upstream != ip {
+			err = ipDb.Lookup(net.ParseIP(upstream), &record)
+			if err == nil && record != nil {
+				result["upstream_geo"] = record
+			}
 		}
 	}
 
@@ -222,8 +238,11 @@ func countryAction(w http.ResponseWriter, r *http.Request) {
 	ip, upstream := getIp(r)
 
 	result := map[string]interface{}{
-		"ip":       ip,
-		"upstream": upstream,
+		"ip": ip,
+	}
+
+	if upstream != ip {
+		result["upstream"] = upstream
 	}
 
 	if ipDb != nil {
