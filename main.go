@@ -171,9 +171,10 @@ func headerAction(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if upstream != ip {
-			err = ipDb.Lookup(net.ParseIP(upstream), &record)
-			if err == nil && record != nil {
-				result["upstream_geo"] = record
+			var record1 map[string]interface{}
+			err = ipDb.Lookup(net.ParseIP(upstream), &record1)
+			if err == nil && record1 != nil {
+				result["upstream_geo"] = record1
 			}
 		}
 	}
