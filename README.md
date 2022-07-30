@@ -30,8 +30,12 @@ go install github.com/LubyRuffy/myip@latest
 绑定到80端口需要root权限
 ```shell
 cd `go env GOPATH`/bin
-sudo ./myip -addr :80 
+sudo ./myip -addr :80
+
+# 或者nohup运行
+sudo nohup sh -c '`go env GOPATH`/bin/myip -addr :80' &
 ```
+
 
 ## 测试
 
