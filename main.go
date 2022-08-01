@@ -86,7 +86,7 @@ func ipAction(w http.ResponseWriter, r *http.Request) {
 		result["upstream"] = upstream
 	}
 
-	json.NewEncoder(w).Encode(result)
+	prettyJsonOutput(w, r, result)
 }
 
 /*
@@ -179,7 +179,16 @@ func headerAction(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	json.NewEncoder(w).Encode(result)
+	prettyJsonOutput(w, r, result)
+}
+
+func prettyJsonOutput(w http.ResponseWriter, r *http.Request, result interface{}) {
+	enc := json.NewEncoder(w)
+	if r.URL.Query().Has("p") || r.URL.Query().Has("pretty") {
+		enc.SetIndent("", "  ")
+	}
+
+	enc.Encode(result)
 }
 
 /*
@@ -258,18 +267,18 @@ func countryAction(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	json.NewEncoder(w).Encode(result)
+	prettyJsonOutput(w, r, result)
 }
 
 func statusAction(w http.ResponseWriter, r *http.Request) {
-	s := map[string]interface{}{
+	result := map[string]interface{}{
 		"status":  "ok",
 		"version": version,
 	}
 	if ipDb != nil {
-		s["ipdb"] = ipDb.Metadata
+		result["ipdb"] = ipDb.Metadata
 	}
-	json.NewEncoder(w).Encode(s)
+	prettyJsonOutput(w, r, result)
 }
 
 func runWeb(addr string) *http.Server {

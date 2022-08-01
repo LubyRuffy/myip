@@ -14,12 +14,13 @@
 
 ## Feature
 - [x] / 首页只返回IP的字符串
-- [x] /c或者/country json格式，ip,country 
-- [x] /geo 行格式，ip,upstream,country,province,city 
+- [x] /geo 行格式，ip,upstream,country,province,city
+- [x] /c或者/country json格式，ip,country
 - [x] /ip json格式，带有ip,country,upstream（上一来源如果有的话）
 - [x] /h或者/header json格式，返回ip,country,upstream,header
 - [x] 支持ipv6，需要dns配置ipv6对应的AAAA记录，```dig AAAA ip.bmh.im```，客户端是ipv6的话可以直接查询
 - [ ] 支持代理验证？
+- [x] 所有接口支持pretty模式，默认为false，参数带有p或者pretty的情况下，会格式化输出json
 
 ## 运行
 ```shell
@@ -54,7 +55,7 @@ $ http_proxy=http://2.2.2.2 curl ip.bmh.im
 
 ### 获取country，json格式
 ```shell
-$ curl ip.bmh.im/c | jq
+$ curl ip.bmh.im/c?p
 {
   "ip": "155.138.1.1",
   "country": "United States",
@@ -62,7 +63,7 @@ $ curl ip.bmh.im/c | jq
 ```
 
 ```shell
-$ http_proxy=http://155.138.1.1 curl ip.bmh.im/c | jq
+$ http_proxy=http://155.138.1.1 curl ip.bmh.im/c?p
 {
   "ip": "155.138.1.1",
   "country": "United States",
@@ -86,7 +87,7 @@ $ http_proxy=http://155.138.1.1 curl ip.bmh.im/geo
 
 ### 获取header，json格式
 ```shell
-$ http_proxy=http://155.138.1.1 curl ip.bmh.im/h | jq
+$ http_proxy=http://155.138.1.1 curl ip.bmh.im/h?p
 {
   "geo": {
     "city": {
