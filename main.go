@@ -41,6 +41,10 @@ func getIp(r *http.Request) (string, string) {
 	var upstream string
 	if r.Header.Get("X-Forwarded-For") != "" {
 		upstream = r.Header.Get("X-Forwarded-For")
+		if strings.Contains(upstream, ",") {
+			// 多条，取第一条
+			upstream = strings.Split(upstream, ",")[0]
+		}
 	} else if r.Header.Get("X-Real-IP") != "" {
 		upstream = r.Header.Get("X-Real-IP")
 	} else {
