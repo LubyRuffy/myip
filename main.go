@@ -261,9 +261,11 @@ func countryAction(w http.ResponseWriter, r *http.Request) {
 		if err == nil && record != nil {
 			result["country"] = record["country"].(map[string]interface{})["names"].(map[string]interface{})["en"].(string)
 		}
-		err = ipDb.Lookup(net.ParseIP(upstream), &record)
-		if err == nil && record != nil {
-			result["upstream_country"] = record["country"].(map[string]interface{})["names"].(map[string]interface{})["en"].(string)
+		if upstream != ip {
+			err = ipDb.Lookup(net.ParseIP(upstream), &record)
+			if err == nil && record != nil {
+				result["upstream_country"] = record["country"].(map[string]interface{})["names"].(map[string]interface{})["en"].(string)
+			}
 		}
 	}
 
