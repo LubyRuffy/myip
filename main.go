@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/LubyRuffy/myip/ipdb"
 	"github.com/gorilla/mux"
 	"log"
 	"net"
@@ -167,16 +168,16 @@ func headerAction(w http.ResponseWriter, r *http.Request) {
 		result["upstream"] = upstream
 	}
 
-	if ipDb != nil {
+	if ipdb.Get() != nil {
 		var record map[string]interface{}
-		err := ipDb.Lookup(net.ParseIP(ip), &record)
+		err := ipdb.Get().Lookup(net.ParseIP(ip), &record)
 		if err == nil && record != nil {
 			result["geo"] = record
 		}
 
 		if upstream != ip {
 			var record1 map[string]interface{}
-			err = ipDb.Lookup(net.ParseIP(upstream), &record1)
+			err = ipdb.Get().Lookup(net.ParseIP(upstream), &record1)
 			if err == nil && record1 != nil {
 				result["upstream_geo"] = record1
 			}
@@ -209,9 +210,9 @@ func geoAction(w http.ResponseWriter, r *http.Request) {
 		upstreamLine = upstream
 	}
 
-	if ipDb != nil {
+	if ipdb.Get() != nil {
 		var record map[string]interface{}
-		err := ipDb.Lookup(net.ParseIP(ip), &record)
+		err := ipdb.Get().Lookup(net.ParseIP(ip), &record)
 		if err == nil && record != nil {
 			ipLine += "," + record["country"].(map[string]interface{})["names"].(map[string]interface{})["en"].(string)
 			var subdivisions string
@@ -224,7 +225,7 @@ func geoAction(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if upstream != ip {
-			err = ipDb.Lookup(net.ParseIP(upstream), &record)
+			err = ipdb.Get().Lookup(net.ParseIP(upstream), &record)
 			if err == nil && record != nil {
 				upstreamLine += "," + record["country"].(map[string]interface{})["names"].(map[string]interface{})["en"].(string)
 				var subdivisions string
@@ -259,16 +260,16 @@ func countryAction(w http.ResponseWriter, r *http.Request) {
 		result["upstream"] = upstream
 	}
 
-	if ipDb != nil {
+	if ipdb.Get() != nil {
 		var record map[string]interface{}
-		err := ipDb.Lookup(net.ParseIP(ip), &record)
+		err := ipdb.Get().Lookup(net.ParseIP(ip), &record)
 		if err == nil && record != nil {
 			result["country"] = record["country"].(map[string]interface{})["names"].(map[string]interface{})["en"].(string)
 		}
 
 		if upstream != ip {
 			var upstreamRecord map[string]interface{}
-			err = ipDb.Lookup(net.ParseIP(upstream), &upstreamRecord)
+			err = ipdb.Get().Lookup(net.ParseIP(upstream), &upstreamRecord)
 			if err == nil && upstreamRecord != nil {
 				result["upstream_country"] = upstreamRecord["country"].(map[string]interface{})["names"].(map[string]interface{})["en"].(string)
 			}
@@ -283,8 +284,8 @@ func statusAction(w http.ResponseWriter, r *http.Request) {
 		"status":  "ok",
 		"version": version,
 	}
-	if ipDb != nil {
-		result["ipdb"] = ipDb.Metadata
+	if ipdb.Get() != nil {
+		result["ipdb"] = ipdb.Get().Metadata
 	}
 	prettyJsonOutput(w, r, result)
 }
@@ -316,12 +317,14 @@ func runWeb(addr string) *http.Server {
 }
 
 func main() {
+	updateDuration := time.Hour * 24 // 1天检查一次更新
+
 	addr := flag.String("addr", ":8888", "listen addr")
 	duration := flag.Int("duration", 10, "duration")
 	flag.Parse()
 
 	// 检查数据库
-	go downloadIpDatabase()
+	go ipdb.UpdateIpDatabase()
 
 	s := runWeb(*addr)
 
@@ -337,7 +340,7 @@ func main() {
 			//
 			if time.Since(lastCheckTime) > updateDuration {
 				// 检查数据库
-				go downloadIpDatabase()
+				go ipdb.UpdateIpDatabase()
 			}
 			log.Println("=== processed:", processedRequest)
 		case <-sigs:

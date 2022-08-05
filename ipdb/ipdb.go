@@ -1,4 +1,4 @@
-package main
+package ipdb
 
 import (
 	"compress/gzip"
@@ -13,14 +13,17 @@ import (
 	"regexp"
 	"strings"
 	"sync"
-	"time"
 )
 
 var (
-	downloadLock   sync.Mutex        // 下载锁
-	ipDb           *maxminddb.Reader // 数据库
-	updateDuration = time.Hour * 24  // 1天检查一次更新
+	downloadLock sync.Mutex        // 下载锁
+	ipDb         *maxminddb.Reader // 数据库
 )
+
+// Get 获取实例
+func Get() *maxminddb.Reader {
+	return ipDb
+}
 
 // 获取目录内的版本
 func getLastDatabaseFileName() string {
@@ -92,8 +95,8 @@ func openIPDb(dbFile string) error {
 	return nil
 }
 
-// 下载ip数据库
-func downloadIpDatabase() {
+// UpdateIpDatabase 更新ip数据库，如果没有就下载最新的版本
+func UpdateIpDatabase() {
 	downloadLock.Lock()
 	defer downloadLock.Unlock()
 
