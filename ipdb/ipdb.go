@@ -3,7 +3,7 @@ package ipdb
 import (
 	"compress/gzip"
 	"errors"
-	"github.com/oschwald/maxminddb-golang"
+	"github.com/oschwald/geoip2-golang"
 	"io"
 	"io/ioutil"
 	"log"
@@ -16,12 +16,12 @@ import (
 )
 
 var (
-	downloadLock sync.Mutex        // 下载锁
-	ipDb         *maxminddb.Reader // 数据库
+	downloadLock sync.Mutex     // 下载锁
+	ipDb         *geoip2.Reader // 数据库
 )
 
 // Get 获取实例
-func Get() *maxminddb.Reader {
+func Get() *geoip2.Reader {
 	return ipDb
 }
 
@@ -85,7 +85,7 @@ func openIPDb(dbFile string) error {
 		ipDb = nil
 	}
 
-	newIpDb, err := maxminddb.Open(filepath.Join(filepath.Dir(os.Args[0]), dbFile))
+	newIpDb, err := geoip2.Open(filepath.Join(filepath.Dir(os.Args[0]), dbFile))
 	if err != nil {
 		log.Println("[WARNING] open ip db failed:", err)
 		return err

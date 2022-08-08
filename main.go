@@ -169,17 +169,15 @@ func headerAction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if ipdb.Get() != nil {
-		var record map[string]interface{}
-		err := ipdb.Get().Lookup(net.ParseIP(ip), &record)
-		if err == nil && record != nil {
-			result["geo"] = record
+		city, err := ipdb.Get().City(net.ParseIP(ip))
+		if err == nil && city != nil {
+			result["geo"] = city
 		}
 
 		if upstream != ip {
-			var record1 map[string]interface{}
-			err = ipdb.Get().Lookup(net.ParseIP(upstream), &record1)
-			if err == nil && record1 != nil {
-				result["upstream_geo"] = record1
+			city1, err := ipdb.Get().City(net.ParseIP(upstream))
+			if err == nil && city1 != nil {
+				result["upstream_geo"] = city1
 			}
 		}
 	}
@@ -211,30 +209,30 @@ func geoAction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if ipdb.Get() != nil {
-		var record map[string]interface{}
-		err := ipdb.Get().Lookup(net.ParseIP(ip), &record)
-		if err == nil && record != nil {
-			ipLine += "," + record["country"].(map[string]interface{})["names"].(map[string]interface{})["en"].(string)
+		city, err := ipdb.Get().City(net.ParseIP(ip))
+		if err == nil && city != nil {
+			ipLine += "," + city.Country.Names["en"]
+
 			var subdivisions string
-			if len(record["subdivisions"].([]interface{})) > 0 {
-				subdivisions = record["subdivisions"].([]interface{})[0].(map[string]interface{})["names"].(map[string]interface{})["en"].(string)
+			if len(city.Subdivisions) > 0 {
+				subdivisions = city.Subdivisions[0].Names["en"]
 			}
 			ipLine += "," + subdivisions
-			ipLine += "," + record["city"].(map[string]interface{})["names"].(map[string]interface{})["en"].(string)
-			ipLine += "," + record["continent"].(map[string]interface{})["names"].(map[string]interface{})["en"].(string)
+			ipLine += "," + city.City.Names["en"]
+			ipLine += "," + city.Continent.Names["en"]
 		}
 
 		if upstream != ip {
-			err = ipdb.Get().Lookup(net.ParseIP(upstream), &record)
-			if err == nil && record != nil {
-				upstreamLine += "," + record["country"].(map[string]interface{})["names"].(map[string]interface{})["en"].(string)
+			city, err = ipdb.Get().City(net.ParseIP(upstream))
+			if err == nil && city != nil {
+				upstreamLine += "," + city.Country.Names["en"]
 				var subdivisions string
-				if len(record["subdivisions"].([]interface{})) > 0 {
-					subdivisions = record["subdivisions"].([]interface{})[0].(map[string]interface{})["names"].(map[string]interface{})["en"].(string)
+				if len(city.Subdivisions) > 0 {
+					subdivisions = city.Subdivisions[0].Names["en"]
 				}
 				upstreamLine += "," + subdivisions
-				upstreamLine += "," + record["city"].(map[string]interface{})["names"].(map[string]interface{})["en"].(string)
-				upstreamLine += "," + record["continent"].(map[string]interface{})["names"].(map[string]interface{})["en"].(string)
+				upstreamLine += "," + city.City.Names["en"]
+				upstreamLine += "," + city.Continent.Names["en"]
 			}
 		}
 
@@ -261,17 +259,15 @@ func countryAction(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if ipdb.Get() != nil {
-		var record map[string]interface{}
-		err := ipdb.Get().Lookup(net.ParseIP(ip), &record)
-		if err == nil && record != nil {
-			result["country"] = record["country"].(map[string]interface{})["names"].(map[string]interface{})["en"].(string)
+		city, err := ipdb.Get().City(net.ParseIP(ip))
+		if err == nil && city != nil {
+			result["country"] = city.Country.Names["en"]
 		}
 
 		if upstream != ip {
-			var upstreamRecord map[string]interface{}
-			err = ipdb.Get().Lookup(net.ParseIP(upstream), &upstreamRecord)
-			if err == nil && upstreamRecord != nil {
-				result["upstream_country"] = upstreamRecord["country"].(map[string]interface{})["names"].(map[string]interface{})["en"].(string)
+			city, err = ipdb.Get().City(net.ParseIP(upstream))
+			if err == nil && city != nil {
+				result["upstream_country"] = city.Country.Names["en"]
 			}
 		}
 	}
