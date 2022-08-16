@@ -23,12 +23,13 @@
 - [x] 所有接口支持pretty模式，默认为false，参数带有p或者pretty的情况下，会格式化输出json
 
 ## 运行
+
 ```shell
 go install github.com/LubyRuffy/myip@latest
 `go env GOPATH`/bin/myip 
 ```
 
-绑定到80端口需要root权限
+### 绑定到80端口需要root权限
 ```shell
 cd `go env GOPATH`/bin
 sudo ./myip -addr :80
@@ -37,6 +38,12 @@ sudo ./myip -addr :80
 sudo nohup sh -c "`go env GOPATH`/bin/myip -addr :80" &
 ```
 
+### 启动tls自动更新let's encrypt证书
+```shell
+cd `go env GOPATH`/bin
+sudo ./myip -addr :80
+sudo nohup sh -c "`go env GOPATH`/bin/myip -addr :80 -autotls -subdomains ip.bmh.im" &
+```
 
 ## 测试
 

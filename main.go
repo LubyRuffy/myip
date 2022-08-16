@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/LubyRuffy/myip/ipdb"
 	"github.com/gorilla/mux"
+	"golang.org/x/crypto/acme/autocert"
 	"log"
 	"net"
 	"net/http"
@@ -286,7 +287,7 @@ func statusAction(w http.ResponseWriter, r *http.Request) {
 	prettyJsonOutput(w, r, result)
 }
 
-func runWeb(addr string) *http.Server {
+func runWeb(addr string, subdomain []string) []*http.Server {
 	router := mux.NewRouter()
 	router.Use(loggingMiddleware) //统计和日志
 	// 首页
@@ -303,26 +304,72 @@ func runWeb(addr string) *http.Server {
 	// status
 	router.HandleFunc("/status", statusAction)
 
+	if len(subdomain) > 0 {
+		m := autocert.Manager{
+			Prompt:     autocert.AcceptTOS,
+			HostPolicy: autocert.HostWhitelist(subdomain...),
+		}
+
+		s := &http.Server{
+			Addr:      ":443",
+			TLSConfig: m.TLSConfig(),
+			Handler:   router,
+		}
+
+		redirect := func(w http.ResponseWriter, req *http.Request) {
+			target := "https://" + req.Host + req.URL.Path
+			if len(req.URL.RawQuery) > 0 {
+				target += "?" + req.URL.RawQuery
+			}
+			http.Redirect(w, req, target, http.StatusTemporaryRedirect)
+		}
+
+		httpSrv := &http.Server{
+			Addr:      addr,
+			TLSConfig: m.TLSConfig(),
+			Handler:   m.HTTPHandler(http.HandlerFunc(redirect)),
+		}
+
+		go httpSrv.ListenAndServe() // http用于验证
+
+		go s.ListenAndServeTLS("", "")
+
+		return []*http.Server{httpSrv, s}
+	}
+
 	srv := &http.Server{
 		Addr:    addr,
 		Handler: router,
 	}
 
 	go srv.ListenAndServe()
-	return srv
+	return []*http.Server{srv}
 }
 
 func main() {
 	updateDuration := time.Hour * 24 // 1天检查一次更新
 
-	addr := flag.String("addr", ":8888", "listen addr")
+	addr := flag.String("addr", ":80", "listen addr")
 	duration := flag.Int("duration", 10, "duration")
+	autotls := flag.Bool("autotls", false, "let's encrypt")
+	subdomains := flag.String("subdomains", "", "only useful when autotls enable")
 	flag.Parse()
 
 	// 检查数据库
 	go ipdb.UpdateIpDatabase()
 
-	s := runWeb(*addr)
+	var subdomain []string
+	if *autotls {
+		subdomain = strings.Split(*subdomains, ",")
+		if len(subdomain) == 0 {
+			panic("subdomains cannot be empty when autotls enable")
+		}
+	}
+	srvs := runWeb(*addr, subdomain)
+
+	for _, s := range srvs {
+		log.Println("listen at:", s.Addr)
+	}
 
 	// 等待事件
 	sigs := make(chan os.Signal, 1)
@@ -340,7 +387,10 @@ func main() {
 			}
 			log.Println("=== processed:", processedRequest)
 		case <-sigs:
-			s.Close()
+			for _, s := range srvs {
+				s.Close()
+			}
+
 			ticker.Stop()
 			return
 		}
