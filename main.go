@@ -19,7 +19,7 @@ import (
 )
 
 var (
-	version          = "v0.1" // 版本，展示用
+	version          = "v0.2" // 版本，展示用
 	processedRequest uint64   // 处理了多少请求，统计用
 )
 
@@ -294,7 +294,9 @@ func runWeb(addr string, subdomain []string) []*http.Server {
 	router.HandleFunc("/", defaultAction)
 	// ip
 	router.HandleFunc("/ip", ipAction)
+	// geo
 	router.HandleFunc("/geo", geoAction)
+	router.HandleFunc("/g", geoAction)
 	// header
 	router.HandleFunc("/h", headerAction)
 	router.HandleFunc("/header", headerAction)

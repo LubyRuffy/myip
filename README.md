@@ -19,8 +19,8 @@
 - [x] /ip json格式，带有ip,country,upstream（上一来源如果有的话）
 - [x] /h或者/header json格式，返回ip,country,upstream,header
 - [x] 支持ipv6，需要dns配置ipv6对应的AAAA记录，```dig AAAA ip.bmh.im```，客户端是ipv6的话可以直接查询
-- [ ] 支持代理验证？
 - [x] 所有接口支持pretty模式，默认为false，参数带有p或者pretty的情况下，会格式化输出json
+- [x] 支持let's encrypt自动启动https证书模式 ```-autotls```
 
 ## 运行
 
@@ -106,16 +106,7 @@ $ http_proxy=http://155.138.1.1 curl ip.bmh.im/h?p
       "code": "AS",
       "geoname_id": 6255147,
       "names": {
-        "de": "Asien",
-        "en": "Asia",
-        "es": "Asia",
-        "fa": " آسیا",
-        "fr": "Asie",
-        "ja": "アジア大陸",
-        "ko": "아시아",
-        "pt-BR": "Ásia",
-        "ru": "Азия",
-        "zh-CN": "亚洲"
+        "en": "Asia"
       }
     },
     "country": {
@@ -123,16 +114,7 @@ $ http_proxy=http://155.138.1.1 curl ip.bmh.im/h?p
       "is_in_european_union": false,
       "iso_code": "CN",
       "names": {
-        "de": "China, Volksrepublik",
-        "en": "China",
-        "es": "China",
-        "fa": "چین",
-        "fr": "Chine",
-        "ja": "中国",
-        "ko": "중국",
-        "pt-BR": "China",
-        "ru": "Китай",
-        "zh-CN": "中国"
+        "en": "China"
       }
     },
     "location": {
@@ -160,16 +142,7 @@ $ http_proxy=http://155.138.1.1 curl ip.bmh.im/h?p
       "code": "AS",
       "geoname_id": 6255147,
       "names": {
-        "de": "Asien",
-        "en": "Asia",
-        "es": "Asia",
-        "fa": " آسیا",
-        "fr": "Asie",
-        "ja": "アジア大陸",
-        "ko": "아시아",
-        "pt-BR": "Ásia",
-        "ru": "Азия",
-        "zh-CN": "亚洲"
+        "en": "Asia"
       }
     },
     "country": {
@@ -177,16 +150,7 @@ $ http_proxy=http://155.138.1.1 curl ip.bmh.im/h?p
       "is_in_european_union": false,
       "iso_code": "CN",
       "names": {
-        "de": "China, Volksrepublik",
-        "en": "China",
-        "es": "China",
-        "fa": "چین",
-        "fr": "Chine",
-        "ja": "中国",
-        "ko": "중국",
-        "pt-BR": "China",
-        "ru": "Китай",
-        "zh-CN": "中国"
+        "en": "China"
       }
     },
     "location": {
