@@ -316,18 +316,19 @@ func runWeb(addr string, subdomain []string) []*http.Server {
 			Handler:   router,
 		}
 
-		redirect := func(w http.ResponseWriter, req *http.Request) {
-			target := "https://" + req.Host + req.URL.Path
-			if len(req.URL.RawQuery) > 0 {
-				target += "?" + req.URL.RawQuery
-			}
-			http.Redirect(w, req, target, http.StatusTemporaryRedirect)
-		}
+		//redirect := func(w http.ResponseWriter, req *http.Request) {
+		//	target := "https://" + req.Host + req.URL.Path
+		//	if len(req.URL.RawQuery) > 0 {
+		//		target += "?" + req.URL.RawQuery
+		//	}
+		//	http.Redirect(w, req, target, http.StatusTemporaryRedirect)
+		//}
 
 		httpSrv := &http.Server{
 			Addr:      addr,
 			TLSConfig: m.TLSConfig(),
-			Handler:   m.HTTPHandler(http.HandlerFunc(redirect)),
+			Handler:   router,
+			//Handler:   m.HTTPHandler(http.HandlerFunc(redirect)),
 		}
 
 		go httpSrv.ListenAndServe() // http用于验证
