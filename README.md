@@ -14,10 +14,10 @@
 
 ## Feature
 - [x] / 首页只返回IP的字符串
-- [x] /geo 行格式，ip,upstream,country,province,city
+- [x] /h或者/header json格式，返回ip,country,upstream,header
+- [x] /g或者/geo 行格式，ip,upstream,country,province,city
 - [x] /c或者/country json格式，ip,country
 - [x] /ip json格式，带有ip,country,upstream（上一来源如果有的话）
-- [x] /h或者/header json格式，返回ip,country,upstream,header
 - [x] 支持ipv6，需要dns配置ipv6对应的AAAA记录，```dig AAAA ip.bmh.im```，客户端是ipv6的话可以直接查询
 - [x] 所有接口支持pretty模式，默认为false，参数带有p或者pretty的情况下，会格式化输出json
 - [x] 支持let's encrypt自动启动https证书模式 ```-autotls```
@@ -40,9 +40,7 @@ sudo nohup sh -c "`go env GOPATH`/bin/myip -addr :80" &
 
 ### 启动tls自动更新let's encrypt证书
 ```shell
-cd `go env GOPATH`/bin
-sudo ./myip -addr :80
-sudo nohup sh -c "`go env GOPATH`/bin/myip -addr :80 -autotls -subdomains ip.bmh.im" &
+sudo `go env GOPATH`/bin/myip -addr :80 -autotls -subdomains ip.bmh.im
 ```
 
 ## 测试
