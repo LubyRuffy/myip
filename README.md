@@ -166,5 +166,11 @@ $ http_proxy=http://155.138.1.1 curl ip.bmh.im/h?p
 }
 ```
 
+## 发布
+
+```shell
+./scripts/tag_release.sh
+```
+
 ## 致谢
 目前看起来，不用登陆，还能免费下载和使用的ip库，只剩下db-ip了。
