@@ -14,7 +14,7 @@
 
 ## Feature
 - [x] / 首页只返回IP的字符串
-- [x] /h或者/header json格式，返回ip,country,upstream,header
+- [x] /h或者/header json格式，返回ip,continent,country,city,location,upstream,header
 - [x] /g或者/geo 行格式，ip,upstream,country,province,city
 - [x] /c或者/country json格式，ip,country
 - [x] /ip json格式，带有ip,country,upstream（上一来源如果有的话）

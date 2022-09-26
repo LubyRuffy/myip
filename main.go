@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	version          = "v0.2" // 版本，展示用
+	version          = "v0.3" // 版本，展示用
 	processedRequest uint64   // 处理了多少请求，统计用
 )
 
@@ -31,7 +31,7 @@ func statusAction(c *gin.Context) {
 		"version": version,
 	}
 	if ipdb.Get() != nil {
-		result["ipdb"] = ipdb.Get().Metadata
+		result["ipdb"] = myipservice.MarshalJSONWithTag(ipdb.Get().Metadata(), "maxminddb")
 	}
 	myipservice.PrettyJsonOutput(c, result)
 }
@@ -78,10 +78,18 @@ func main() {
 	duration := flag.Int("duration", 10, "duration")
 	autotls := flag.Bool("autotls", false, "let's encrypt")
 	subdomains := flag.String("subdomains", "", "only useful when autotls enable")
+	downloadURL := flag.String("downloadIpDb", "", "only download dbfile") // https://download.db-ip.com/free/dbip-city-lite-2022-09.mmdb.gz
 	flag.Parse()
 
+	if *downloadURL != "" {
+		if err := ipdb.UpdateIpDatabase(*downloadURL); err != nil {
+			panic(err)
+		}
+		return
+	}
+
 	// 检查数据库
-	go ipdb.UpdateIpDatabase()
+	go ipdb.UpdateIpDatabase("")
 
 	var subdomain []string
 	if *autotls {
@@ -108,7 +116,7 @@ func main() {
 			//
 			if time.Since(lastCheckTime) > updateDuration {
 				// 检查数据库
-				go ipdb.UpdateIpDatabase()
+				go ipdb.UpdateIpDatabase("")
 			}
 			log.Println("=== processed:", processedRequest)
 		case <-sigs:

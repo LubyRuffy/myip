@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"github.com/LubyRuffy/myip/ipdb"
 	"github.com/gin-gonic/gin"
+	"github.com/oschwald/geoip2-golang"
+	"log"
 	"net"
 	"net/http"
+	"reflect"
 	"strings"
 )
 
@@ -142,21 +145,77 @@ func headerAction(c *gin.Context) {
 		result["upstream"] = upstream
 	}
 
+	miniCity := func(city *geoip2.City) map[string]interface{} {
+		nilNames := func(obj interface{}, lang string) interface{} {
+			v := reflect.ValueOf(obj)
+			log.Println(v.Type())
+			log.Println(v.Type().Kind())
+			if v.Type().Kind() == reflect.Slice {
+				if v.Len() == 0 {
+					return nil
+				}
+				v = v.Index(0)
+			}
+			names := v.FieldByName("Names")
+			if names.Kind() == reflect.Map {
+				value := names.MapIndex(reflect.ValueOf(lang))
+				if !value.IsValid() {
+					return ""
+				}
+				return value.Interface() // string
+			}
+			return nil
+		}
+		lang := "en"
+		if city.Country.Names == nil {
+			return nil
+		}
+		return map[string]interface{}{
+			"city":         nilNames(city.City, lang),
+			"country":      nilNames(city.Country, lang),
+			"continent":    nilNames(city.Continent, lang),
+			"subdivisions": nilNames(city.Subdivisions, lang),
+			"location": map[string]interface{}{
+				"longitude": city.Location.Longitude,
+				"latitude":  city.Location.Latitude,
+			},
+		}
+	}
+
 	if ipdb.Get() != nil {
 		city, err := ipdb.Get().City(net.ParseIP(ip))
 		if err == nil && city != nil {
-			result["geo"] = city
+			if v := miniCity(city); v != nil {
+				result["geo"] = v
+			}
 		}
 
 		if upstream != ip {
 			city1, err := ipdb.Get().City(net.ParseIP(upstream))
 			if err == nil && city1 != nil {
-				result["upstream_geo"] = city1
+				if v := miniCity(city1); v != nil {
+					result["upstream_geo"] = v
+				}
 			}
 		}
 	}
 
 	PrettyJsonOutput(c, result)
+}
+
+// MarshalJSONWithTag 处理自定义tag，geoip2使用的tag不是json，而是maxminddb
+func MarshalJSONWithTag(v interface{}, customTag string) map[string]interface{} {
+	ret := make(map[string]interface{})
+	uValue := reflect.ValueOf(v)
+
+	// Scan and collect all fields converting any that have a "db" tag
+	for i := 0; i < uValue.NumField(); i++ {
+		f := uValue.Type().Field(i)
+		if key, ok := f.Tag.Lookup(customTag); ok && key != "" {
+			ret[key] = uValue.Field(i).Interface()
+		}
+	}
+	return ret
 }
 
 // PrettyJsonOutput 决定是否格式化json输出

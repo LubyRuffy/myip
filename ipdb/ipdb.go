@@ -96,53 +96,68 @@ func openIPDb(dbFile string) error {
 }
 
 // UpdateIpDatabase 更新ip数据库，如果没有就下载最新的版本
-func UpdateIpDatabase() {
+func UpdateIpDatabase(dbUrl string) error {
 	downloadLock.Lock()
 	defer downloadLock.Unlock()
 
 	lastDatabaseFileName := getLastDatabaseFileName()
 	if len(lastDatabaseFileName) > 0 {
-		openIPDb(lastDatabaseFileName)
+		if err := openIPDb(lastDatabaseFileName); err != nil {
+			return err
+		}
 	}
 
-	// 解析下载地址
-	resp, err := http.Get("https://db-ip.com/db/download/ip-to-city-lite")
-	if err != nil {
-		log.Println("[WARNING] fetch ip city lite database failed:", err)
-		return
+	if dbUrl == "" {
+		log.Println("[DEBUG] parse db-ip database download url...")
+		// 解析下载地址
+		resp, err := http.Get("https://db-ip.com/db/download/ip-to-city-lite")
+		if err != nil {
+			log.Println("[WARNING] fetch ip city lite database failed:", err)
+			return err
+		}
+		defer resp.Body.Close()
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			log.Println("[WARNING] fetch html failed:", err)
+			return err
+		}
+		//https://download.db-ip.com/free/dbip-city-lite-2022-07.mmdb.gz
+		urlRegex := regexp.MustCompile(`<a href='(.*?\.gz)' class='.*?'>Download IP to City Lite MMDB</a>`)
+		urls := urlRegex.FindAllStringSubmatch(string(b), 1)
+		if len(urls) == 0 {
+			log.Println("[WARNING] fetch download url failed:", err)
+			return err
+		}
+		dbUrl = urls[0][1]
 	}
-	defer resp.Body.Close()
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Println("[WARNING] fetch html failed:", err)
-		return
-	}
-	//https://download.db-ip.com/free/dbip-city-lite-2022-07.mmdb.gz
-	urlRegex := regexp.MustCompile(`<a href='(.*?\.gz)' class='.*?'>Download IP to City Lite MMDB</a>`)
-	urls := urlRegex.FindAllStringSubmatch(string(b), 1)
-	if len(urls) == 0 {
-		log.Println("[WARNING] fetch download url failed:", err)
-		return
-	}
-	downloadUrl := urls[0][1]
 
 	// 是否已经是最新
-	if lastDatabaseFileName+".gz" == filepath.Base(downloadUrl) {
+	log.Println("[DEBUG] check if db-ip database is the latest...")
+	if lastDatabaseFileName+".gz" == filepath.Base(dbUrl) {
 		log.Println("ip database is the latest")
-		return
+		return nil
 	}
 
 	// 下载数据库
-	lastIPDatabase, err := downloadDatabase(downloadUrl)
+	log.Println("[DEBUG] download db-ip database...")
+	lastIPDatabase, err := downloadDatabase(dbUrl)
 	if err != nil {
 		log.Println("[WARNING] download ip city lite database failed:", err)
-		return
+		return err
 	}
 
-	openIPDb(lastIPDatabase)
+	// 打开数据库
+	log.Println("[DEBUG] try to open db-ip database...")
+	if err = openIPDb(lastIPDatabase); err != nil {
+		return err
+	}
 
 	// 删除历史文件
+	log.Println("[DEBUG] try to delete old db-ip database...")
 	if len(lastDatabaseFileName) > 0 {
 		os.Remove(lastDatabaseFileName)
 	}
+
+	log.Println("[DEBUG] all done...")
+	return nil
 }
