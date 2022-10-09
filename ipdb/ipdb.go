@@ -25,10 +25,18 @@ func Get() *geoip2.Reader {
 	return ipDb
 }
 
+func dbDir() string {
+	path, err := os.Getwd() // current dir
+	if err == nil {
+		return path
+	}
+
+	return filepath.Dir(os.Args[0]) // exe dir
+}
+
 // 获取目录内的版本
 func getLastDatabaseFileName() string {
-	exeDir := filepath.Dir(os.Args[0])
-	fs, _ := ioutil.ReadDir(exeDir)
+	fs, _ := ioutil.ReadDir(dbDir())
 	dbReg := regexp.MustCompile(`dbip-city-lite-\d{4}-\d{2}.mmdb`)
 	for _, file := range fs {
 		if !file.IsDir() {
@@ -62,7 +70,7 @@ func downloadDatabase(url string) (string, error) {
 		return "", err
 	}
 
-	absFile := filepath.Join(filepath.Dir(os.Args[0]), filename)
+	absFile := filepath.Join(dbDir(), filename)
 	// Create the file
 	out, err := os.Create(absFile)
 	if err != nil {
@@ -85,7 +93,7 @@ func openIPDb(dbFile string) error {
 		ipDb = nil
 	}
 
-	newIpDb, err := geoip2.Open(filepath.Join(filepath.Dir(os.Args[0]), dbFile))
+	newIpDb, err := geoip2.Open(filepath.Join(dbDir(), dbFile))
 	if err != nil {
 		log.Println("[WARNING] open ip db failed:", err)
 		return err
