@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	version          = "v0.3" // 版本，展示用
+	version          = "v0.4" // 版本，展示用
 	processedRequest uint64   // 处理了多少请求，统计用
 )
 
@@ -48,6 +48,7 @@ func runWeb(addr string, subdomain []string) []*http.Server {
 		m := autocert.Manager{
 			Prompt:     autocert.AcceptTOS,
 			HostPolicy: autocert.HostWhitelist(subdomain...),
+			Cache:      autocert.DirCache("/tmp/autocert"), // 保存证书文件，复用
 		}
 
 		s := &http.Server{
