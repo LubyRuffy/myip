@@ -1,4 +1,4 @@
-## v0.5 fix download url extract bug
+## v0.5.1 fix download url extract bug
 
 -   fix download url extract bug
 
