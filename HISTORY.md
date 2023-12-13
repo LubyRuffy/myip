@@ -1,3 +1,7 @@
+## v0.5 fix download url extract bug
+
+-   fix download url extract bug
+
 ## v0.4 initial release
 
 -   cache autocert cert files 

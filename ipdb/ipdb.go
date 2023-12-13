@@ -5,7 +5,6 @@ import (
 	"errors"
 	"github.com/oschwald/geoip2-golang"
 	"io"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -34,9 +33,9 @@ func dbDir() string {
 	return filepath.Dir(os.Args[0]) // exe dir
 }
 
-// 获取目录内的版本
-func getLastDatabaseFileName() string {
-	fs, _ := ioutil.ReadDir(dbDir())
+// GetLastDatabaseFileName 获取目录内的版本
+func GetLastDatabaseFileName() string {
+	fs, _ := os.ReadDir(dbDir())
 	dbReg := regexp.MustCompile(`dbip-city-lite-\d{4}-\d{2}.mmdb`)
 	for _, file := range fs {
 		if !file.IsDir() {
@@ -108,7 +107,7 @@ func UpdateIpDatabase(dbUrl string) error {
 	downloadLock.Lock()
 	defer downloadLock.Unlock()
 
-	lastDatabaseFileName := getLastDatabaseFileName()
+	lastDatabaseFileName := GetLastDatabaseFileName()
 	if len(lastDatabaseFileName) > 0 {
 		if err := openIPDb(lastDatabaseFileName); err != nil {
 			return err
@@ -124,13 +123,13 @@ func UpdateIpDatabase(dbUrl string) error {
 			return err
 		}
 		defer resp.Body.Close()
-		b, err := ioutil.ReadAll(resp.Body)
+		b, err := io.ReadAll(resp.Body)
 		if err != nil {
 			log.Println("[WARNING] fetch html failed:", err)
 			return err
 		}
 		//https://download.db-ip.com/free/dbip-city-lite-2022-07.mmdb.gz
-		urlRegex := regexp.MustCompile(`<a href='(.*?\.gz)' class='.*?'>Download IP to City Lite MMDB</a>`)
+		urlRegex := regexp.MustCompile(`<a href=['"](.*?\.gz)['"] class=['"].*?['"]>Download IP to City Lite MMDB<\/a>`)
 		urls := urlRegex.FindAllStringSubmatch(string(b), 1)
 		if len(urls) == 0 {
 			log.Println("[WARNING] fetch download url failed:", err)

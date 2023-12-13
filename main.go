@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	version          = "v0.4" // 版本，展示用
+	version          = "v0.5" // 版本，展示用
 	processedRequest uint64   // 处理了多少请求，统计用
 )
 
@@ -29,6 +29,7 @@ func statusAction(c *gin.Context) {
 	result := map[string]interface{}{
 		"status":  "ok",
 		"version": version,
+		"dbname":  ipdb.GetLastDatabaseFileName(),
 	}
 	if ipdb.Get() != nil {
 		result["ipdb"] = myipservice.MarshalJSONWithTag(ipdb.Get().Metadata(), "maxminddb")
